@@ -1,0 +1,28 @@
+{
+  "name": "tile-grid-matrix",
+  "version": "1.0.0",
+  "description": "🔷 javascript utility library to manage tile grids with arbitrary data.",
+  "main": "index.js",
+  "scripts": {
+    "test": "coffee test.coffee"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/arxii/tile-grid-matrix.git"
+  },
+  "keywords": [
+    "react",
+    "grid",
+    "tiles",
+    "preact",
+    "utility",
+    "library",
+    "matrix"
+  ],
+  "author": "arxii",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/arxii/tile-grid-matrix/issues"
+  },
+  "homepage": "https://github.com/arxii/tile-grid-matrix#readme"
+}
