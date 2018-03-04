@@ -2,7 +2,7 @@
 global.log = console.log.bind(console)
 
 # som arbitrary array of items.
-items = [0...5].map (i)->
+items = [0...4].map (i)->
 	n: i
 
 pm = ->
@@ -28,18 +28,17 @@ freeSpace = (item)->
 for item in items
 
 	tile = new Tile
-		max_x: Math.round(Math.random()*3)
-		max_y: Math.round(Math.random()*3)
+		width: Math.round(1+Math.random()*2)
+		height: Math.round(1+Math.random()*2)
 		item: item
 
 	bound = new Rect 
-		min_x: g.full.max_x
-		max_x: g.max_x
-		min_y: g.full.max_y
-		max_y: g.max_y
+		x1: g.full.x2
+		x2: g.x2
+		y1: g.full.y2
+		y2: g.y2
 
-	console.log g.addItem(tile,bound)
-	# break
+	g.addItem(tile,bound)
 
 
 # console.log g.item_list
@@ -53,12 +52,12 @@ pm()
 
 
 # for item in items
-# 	min_x = null
-# 	max_x = g.width
-# 	min_y = g.height
-# 	max_y = g.height
+# 	x1 = null
+# 	x2 = g.width
+# 	y1 = g.height
+# 	y2 = g.height
 	
-# 	g.addItemToMatrix(item,min_x,max_x,min_y,max_y,freeSpace)
+# 	g.addItemToMatrix(item,x1,x2,y1,y2,freeSpace)
 # 	break
 
 

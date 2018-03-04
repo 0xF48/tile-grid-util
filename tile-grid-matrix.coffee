@@ -2,8 +2,8 @@
 
 
 DEFAULT_OPT = 
-	max_x: 3
-	max_y: 3
+	x2: 3
+	y2: 3
 
 _clamp = (n,min,max)->
 	return Math.min(Math.max(n, min), max)
@@ -15,37 +15,37 @@ class Rect
 		if !opt
 			@set()
 		else
-			@set(opt.min_x,opt.max_x,opt.min_y,opt.max_y)
+			@set(opt.x1,opt.x2,opt.y1,opt.y2)
 	
-	set: (min_x,max_x,min_y,max_y)->
-		@min_x = min_x || -1
-		@max_x = max_x || -1
-		@min_y = min_y || -1
-		@max_y = max_y || -1
+	set: (x1,x2,y1,y2)->
+		@x1 = x1 || 0
+		@x2 = x2 || 0
+		@y1 = y1 || 0
+		@y2 = y2 || 0
 		return @
 
 	normalize: ->
-		if @min_x < 0
-			@max_x += @min_x
-			@min_x = 0
-		if @min_y < 0
-			@max_y += @min_y
-			@min_y = 0
+		if @x1 < 0
+			@x2 += @x1
+			@x1 = 0
+		if @y1 < 0
+			@y2 += @y1
+			@y1 = 0
 
 	loopMatrix: (matrix,cb,argA,argB)->
 
-		for y in [@min_y..@max_y]
+		for y in [@y1...@y2]
 			if y < 0 then continue
 			if y > matrix.length then return false
-			for x in [@min_x..@max_x]
+			for x in [@x1...@x2]
 				if matrix[y][x] == undefined then continue
 				if cb(matrix[y][x],x,y,argA,argB) == false
 					return false
 		return true
 
 	loopRect: (cb,argA,argB)->
-		for y in [@min_y..@max_y]
-			for x in [@min_x..@max_x]
+		for y in [@y1...@y2]
+			for x in [@x1...@x2]
 				if cb(x,y,argA,argB) == false
 					return false
 		return true
@@ -54,30 +54,40 @@ class Rect
 # tile class, added as items in grid
 class Tile extends Rect
 	constructor: (opt)->
+		opt.x2 = opt.width
+		opt.y2 = opt.height
 		super(opt)
 		@item = opt.item
 		@rect = opt.rect || null
+		# if @x2 == 0 + @y2  0 || @x1 < 0 || @y1 < 0
+		# 	throw new Error 'bad tile.'
 
 	setXY: (x,y)->
-		@rect.set(x,x+@max_x,y,y+@max_y)
+		@rect.set(x,x+@x2,y,y+@y2)
 
 
 # main grid class
 class TileGrid extends Rect
 	constructor: (opt)->
+
 		super()
 		
-				@matrix = [] #2d matrix array that contains references to items in the list.
+		
+		@matrix = [] #2d matrix array that contains references to items in the list.
 		@item_list = [] # a list of items.
 		@removed = []
 		@full = new Rect() # keep track of what portion of the matrix is full.
 		@full.count_x = []
 		@full.count_y = []
-		@set(0,opt.width-1,0,opt.height-1)
+		
+		@set(0,opt.width,0,opt.height)
 		
 
 	# clear one coordinate from matrix
 	clearCoord: (item,x,y)=>
+		if @matrix[y][x]
+			@decrY(y)
+			@decrX(x)
 		@matrix[y][x] = null
 
 
@@ -94,26 +104,33 @@ class TileGrid extends Rect
 		@incrY(y)
 		@incrX(x)
 
+	# (perf) decrease full row y value
 	decrY: (y)->
-		@matrix[y].count--
-		if @full.max_y > y
-			@full.max_y = y
+		@full.count_y[y]--
+		if @full.y2 > y
+			@full.y2 = y
+
+	# (perf) decrease
+	decrX: (x)->
+		@full.count_x[x]--
+		if @full.x2 > x
+			@full.x2 = x
 
 	# increment row full value
 	incrY: (y)->
 		@full.count_y[y]++
 		if @full.count_y[y] == @width
-			for yi in [@full.min_y..@max_y]
+			for yi in [@full.y2...@y2]
 				if @full.count_y[yi] != @width
-					@full.min_y = yi-1
+					@full.y2 = yi
 					break
 	
 	incrX: (x)->
 		@full.count_x[x]++
 		if @full.count_x[x] == @width
-			for xi in [@full.min_x..@max_x]
+			for xi in [@full.x2...@x2]
 				if @full.count_x[xi] != @height
-					@full.min_x = xi-1
+					@full.x2 = xi
 					break
 
 
@@ -156,82 +173,91 @@ class TileGrid extends Rect
 
 	# insert row(s) into matrix
 	insertY: (pos,count)->
-		pos = _clamp(0,@max_y)
+		pos = _clamp(0,@y2)
 		if pos > 0
-			for x in [0..@max_x]
+			for x in [0...@x2]
 				if @matrix[x][pos] == @matrix[x][pos-1]
 					@freeSpot(x,pos)
 		
 		for i in [0...count]
-			@matrix.splice(pos,0,new Array(@max_x).fill(null))
+			@matrix.splice(pos,0,new Array(@x2).fill(null))
 
 	# set new bounds for matrix.
-	set: (min_x,max_x,min_y,max_y)->
+	set: (x1,x2,y1,y2)->
+		if @x1 == undefined
+			return super(x1,x2,y1,y2)
 
 		diff = new Rect
-			min_x: min_x - @min_x
-			max_x: max_x - @max_x
-			min_y: min_y - @min_y
-			max_y: max_y - @max_y 
+			x1: x1 - @x1
+			x2: x2 - @x2
+			y1: y1 - @y1
+			y2: y2 - @y2 
+		
 		
 		#diff X
-		if diff.max_x > 0
-			for i in [0..diff.max_x]
+		if diff.x2 > 0
+			for i in [0...diff.x2]
+				@full.count_x.push 0
 				for y in @matrix
 					y.push null
-		else if diff.max_x < 0
-			for i in [0..diff.max_x]
-				@clearX(@max_x+i)
+		else if diff.x2 < 0
+			for i in [0...diff.x2]
+				@clearX(@x2+i)
+				@full.count_x.pop()
 				for y in @matrix
 					y.pop()
-		@max_x = max_x
+		@x2 = x2
 
-		if diff.min_x > 0
-			for i in [0..diff.min_x]
+		if diff.x1 > 0
+			for i in [0...diff.x1]
+				@full.count_x.unshift 0
 				for row in @matrix
 					row.unshift null
-		else if diff.min_x < 0
-			for i in [0..diff.min_x]
+		else if diff.x1 < 0
+			for i in [0...diff.x1]
 				@clearX(0)
+				@full.count_x.shift
 				for row in @matrix
 					row.shift()
-		@min_x = min_x
+		@x1 = x1
 		
 		# diff Y
-		if diff.max_y > 0
-			for i in [0..diff.max_y]
-				@matrix.push new Array(@max_x+1).fill(null)
-		else if diff.max_y < 0
-			for i in [0..diff.max_y]
-				@clearY(@matrix.length-1)
+		if diff.y2 > 0
+			for i in [0...diff.y2]
+				@full.count_y.push 0
+				@matrix.push new Array(@x2).fill(null)
+		else if diff.y2 < 0
+			for i in [0...diff.y2]
+				@clearY(@y2-i-1)
+				@full.count_y.pop()
 				@matrix.pop()
-			# for i in [0...diff.max_y]
-		@max_y = max_y
+			# for i in [0...diff.y2]
+		@y2 = y2
 
-		if diff.min_y > 0
-			for i in [0..diff.max_y]
+		if diff.y1 > 0
+			for i in [0...diff.y2]
 				@clearY(0)
+				@full.count_y.shift()
 				@matrix.shift()
-		else if diff.min_y < 0
-			for i in [0..diff.max_y]
-				@matrix.unshift new Array(@max_x+1).fill(null)
-		@min_y = min_y
+		else if diff.y1 < 0
+			for i in [0...diff.y2]
+				@full.count_y.unshift 0
+				@matrix.unshift new Array(@x2).fill(null)
+		@y1 = y1
 
 		@normalize()
 
-		@width = @max_x+1
-		@height = @max_y+1
+		@width = @x2
+		@height = @y2
 
 
 	# check empty rect
 	checkEmptyRect: (x,y,rect,empty_rect)=>
-		empty_rect.set(x,x+rect.max_x,y,y+rect.max_y)
+		empty_rect.set(x,x+rect.x2,y,y+rect.y2)
 
-		#FIX
 		# continue search.
-		if @matrix[empty_rect.max_y][empty_rect.max_x] then return true
-
-		# log 'loop',rect
+		if @matrix[empty_rect.y2-1][empty_rect.x2-1] then return true
+		
 		if empty_rect.loopMatrix(@matrix,@isItemNull) == true
 			return false
 		else
@@ -239,30 +265,33 @@ class TileGrid extends Rect
 
 
 	# find a free rect within bounds, if no rect is found, return null
-	# rect min_x and min_y must be normalized.
+	# rect x1 and y1 must be normalized.
 	findEmptyRect: (rect,bounds,cb)->
 		rect.normalize()
-		bounds.max_x -= rect.max_x
-		bounds.max_y -= rect.max_y
+
+		# limit size by the rect that we are trying to find (no overflow searches)
+		bounds.x2 -= rect.x2 - 1
+		bounds.y2 -= rect.y2 - 1
+		
 
 		# log bounds,rect
-		if bounds.max_x - bounds.min_x < 0
+		if bounds.x2 - bounds.x1 < 0
 			log 'x out of bounds'
 			return null
-		if bounds.max_y - bounds.min_y < 0
+		if bounds.y2 - bounds.y1 < 0
 			log 'y out of bounds'
 			return null
 
 		empty_rect = new Rect
 
-		# log bounds
+		log 'bounds',bounds
 
 		
 		bounds.loopRect(@checkEmptyRect,rect,empty_rect)
 
-		# log bounds.min_x
+		# log bounds.x1
 
-		if empty_rect.max_x != -1 && empty_rect.max_y != -1
+		if empty_rect.x2 != 0 && empty_rect.y2 != 0
 			return empty_rect
 		else
 			return null
@@ -270,7 +299,7 @@ class TileGrid extends Rect
 
 	# add an item with a specific bound to look for free space, if no free space, the cb will be called and space will be searched again but without a callback. if no callback is provided will either place the item or return false.
 	addItem: (item,bound,cb)->
-		log 'addItem',item.item.n
+		log 'addItem',item
 		found_rect = @findEmptyRect(item,bound)
 		if !found_rect
 			return false
@@ -278,6 +307,7 @@ class TileGrid extends Rect
 			item.rect = found_rect
 			item.rect.loopMatrix(@matrix,@setCoord,item)
 			@item_list.push item
+			log 'full',@full
 			return true
 
 
