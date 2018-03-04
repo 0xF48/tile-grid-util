@@ -4,7 +4,7 @@
 
 
 > tile grids...tile grids everywhere!
-😵🤪🤭🧐🤯
+🤪🤭🧐🤯
 
 manage tile grids of any size with this handy library, resize, insert, sort, and crop your tiled grid.
 
