@@ -1,36 +1,40 @@
-{TileGrid,Tile,Rect} = require './tile-grid-matrix.coffee'
+{TileGrid,Tile,Rect} = require './tile-grid-util.coffee'
 global.log = console.log.bind(console)
 
+# Timer = ()->
+# 	@t = 0
+# 	start: ()=>
+# 		@ts = Date.now()
+# 	stop: ()=>
+# 		@t = Date.now()-@ts
+# 		console.log 'timer stopped - ',@t
+# 	t: ()=>
+# 		@t
+
+# timer = Timer()
+
 # som arbitrary array of items.
-items = [0...4].map (i)->
+items = [0...30].map (i)->
 	n: i
-
-pm = ->
-	console.log '-----------------\n\n'
-	for y in g.matrix
-		str = y.map (x)->
-			return x && String(x.item.n) || '-'
-		console.log(str.join(',     ')+'\n\n')
-
-	console.log '-----------------'
 
 
 		
 
 g = new TileGrid
-	width: 4
-	height: 4
+	width: 5
+	height: 5
 
 freeSpace = (item)->
 	return g.addRow(g.height.item.height)
 
+# timer.start()
 # create grid tiles and create a new bound to decide where that item can go.
-for item in items
-
+[0...30].map (i)->
 	tile = new Tile
-		width: Math.round(1+Math.random()*2)
-		height: Math.round(1+Math.random()*2)
-		item: item
+		width: Math.floor(1+Math.random()*2)
+		height: Math.floor(1+Math.random()*2)
+		item: 
+			n:i
 
 	bound = new Rect 
 		x1: g.full.x2
@@ -38,27 +42,55 @@ for item in items
 		y1: g.full.y2
 		y2: g.y2
 
-	g.addItem(tile,bound)
 
+	g.addItem(tile,bound)
+log g.full
+g.log()
+
+g.pad(-1,0,0,0)
+
+log g.full
+g.log()
+
+g.pad(-1,0,0,0)
+
+
+log g.full
+g.log()
+
+# [0...30].map (i)->
+# 	tile = new Tile
+# 		width: Math.floor(1+Math.random()*2)
+# 		height: Math.floor(1+Math.random()*2)
+# 		item:
+# 			n: i+'b'
+
+# 	bound = new Rect 
+# 		x1: g.full.x2
+# 		x2: g.x2
+# 		y1: g.full.y1
+# 		y2: 0
+
+# 	g.addItem(tile,bound)
+
+
+
+
+# g.log()
+# g.pad(0,-1,0,0)
+
+# for i in [0...100]
+# 	g.pad(-Math.floor(Math.random()*3),0,-Math.floor(Math.random()*3),0)
+
+# timer.stop()
 
 # console.log g.item_list
-pm()
+# g.log()
+# g.pad(0,0,0,0)
+# g.log()
 
 
 
-
-# freeSpace = (item,x,y)->
-# 	return g.freeSpace(x,y,item.w,item.h)
-
-
-# for item in items
-# 	x1 = null
-# 	x2 = g.width
-# 	y1 = g.height
-# 	y2 = g.height
-	
-# 	g.addItemToMatrix(item,x1,x2,y1,y2,freeSpace)
-# 	break
 
 
 # console.log '--width--'
