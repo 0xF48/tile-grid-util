@@ -1,4 +1,4 @@
-#javascript utility library to manage tile grids with arbitrary data.
+#a javascript utility library to manage tile grids with arbitrary data.
 
 
 DEFAULT_OPT = 
@@ -11,17 +11,21 @@ _clamp = (n,min,max)->
 
 # base rect class ith "bounds".
 class Rect
-	constructor: (opt)->
-		if !opt
-			@set()
-		else
-			@set(opt.x1,opt.x2,opt.y1,opt.y2)
+	constructor: (x1,x2,y1,y2)->
+		@set(x1,x2,y1,y2)
 	
 	set: (x1,x2,y1,y2)->
 		@x1 = x1 || 0
 		@x2 = x2 || 0
 		@y1 = y1 || 0
 		@y2 = y2 || 0
+		return @
+
+	copy: (rect)->
+		@x1 = rect.x1
+		@x2 = rect.x2
+		@y1 = rect.y1
+		@y2 = rect.y2		
 		return @
 
 	normalize: ->
@@ -31,6 +35,7 @@ class Rect
 		if @y1 < 0
 			@y2 -= @y1
 			@y1 = 0
+		return @
 
 	loopMatrix: (matrix,cb,argA,argB,argC)->
 
@@ -56,7 +61,7 @@ class Tile extends Rect
 	constructor: (opt)->
 		opt.x2 = opt.width
 		opt.y2 = opt.height
-		super(opt)
+		super(0,opt.width,0,opt.height)
 		@item = opt.item
 		@rect = opt.rect || null
 		# if @x2 == 0 + @y2  0 || @x1 < 0 || @y1 < 0
@@ -71,8 +76,9 @@ class TileGrid extends Rect
 	constructor: (opt)->
 
 		super()
+		log @x2
 
-
+		@_temp = [new Rect,new Rect,new Rect]
 		@offset_x = 0
 		@offset_y = 0
 		
@@ -80,11 +86,15 @@ class TileGrid extends Rect
 		@matrix = [] #2d matrix array that contains references to items in the list.
 		@item_list = [] # a list of items.
 		@removed = []
-		@full = new Rect() # keep track of what portion of the matrix is full.
+
+
+		@full = new Rect(opt.width-1,0,opt.height-1,0) # keep track of what portion of the matrix is full.
 		@full.count_x = []
 		@full.count_y = []
-		
+
 		@set(0,opt.width,0,opt.height)
+		
+
 		
 
 	# clear one coordinate from matrix
@@ -127,27 +137,47 @@ class TileGrid extends Rect
 		if @full.x2 > x
 			@full.x2 = x
 
+
 	# increment row full value and count (all x items on y)
 	incrY: (y)->
 		@full.count_y[y]++
+
+		# decide the full X/Y coord
 		if @full.count_y[y] == @width
-			for yi in [@full.y2...@y2]
-				if @full.count_y[yi] != @width
-					@full.y2 = yi
-					break
-				else if yi < @full.y1
-					@full.y1 = yi
+			if y < @full.y1
+				# check for holes
+				for yi in [y...@full.y1]
+					if @full.count_y[yi] != @width
+						return
+				@full.y1 = y
+			else
+				# check for holes
+				for yi in [@full.y1...y]
+					if @full.count_y[yi] != @width
+						return
+				@full.y2 = y
+					
 	
 	# increment column full value and count (all y items on x)
 	incrX: (x)->
 		@full.count_x[x]++
+
+		# decide the full X/Y coord
 		if @full.count_x[x] == @width
-			for xi in [@full.x2...@x2]
-				if @full.count_x[xi] != @height
-					@full.x2 = xi
-					break
-				else if xi < @full.x1
-					@full.x1 = xi
+			if x < @full.x1
+				# check for holes
+				for xi in [x...@full.x1]
+					if @full.count_x[xi] != @width
+						return
+				@full.x1 = x
+			else
+				# check for holes
+				for xi in [@full.x1...x]
+					if @full.count_y[xi] != @width
+						return
+				@full.x2 = x
+					
+
 
 
 
@@ -179,6 +209,19 @@ class TileGrid extends Rect
 		for item,x in @matrix[y]
 			@clearItem @matrix[y][x],x,y
 
+	# clear any items in a column that are also in column x2
+	clearLinkedX: (x,x2)->
+		for row,y in @matrix
+			if row[x] && row[x2] && row[x2][0] == row[x][0]
+				@clearItem row[x],x,y
+
+	# clear any items in a column that are also in column x2
+	clearLinkedY: (y,y2)->
+		for spot,x in @matrix[y]
+			if spot && @matrix[y2] && @matrix[y2][x][0] == spot[0]
+				@clearItem spot,x,y
+				
+
 	# clear a column from matrix
 	clearX: (x)->
 		for row,y in @matrix
@@ -186,20 +229,21 @@ class TileGrid extends Rect
 
 	# insert column(s) into matrix
 	insertX: (pos,count)->
-		pos = _clamp(0,@)
-		for y in @matrix
-			for i in [0...count]
+		@clearLinkedX(pos,_clamp(pos-1,0,@x2-1))
+		
+		
+		for i in [0...count]
+			@full.count_x.splice(pos,0,0)
+			for y in @matrix
 				y.splice(pos,0,null)
 
 	# insert row(s) into matrix
 	insertY: (pos,count)->
-		pos = _clamp(0,@y2)
-		if pos > 0
-			for x in [0...@x2]
-				if @matrix[x][pos] == @matrix[x][pos-1]
-					@freeSpot(x,pos)
-		
+		@clearLinkedY(pos,_clamp(pos-1,0,@y2-1))
+		if @full.y1 < pos
+			@full.y1 = pos+count
 		for i in [0...count]
+			@full.count_y.splice(pos,0,0)
 			@matrix.splice(pos,0,new Array(@x2).fill(null))
 
 	# set new bounds for matrix.
@@ -211,12 +255,7 @@ class TileGrid extends Rect
 		if @x1 == undefined
 			return super(x1,x2,y1,y2)
 
-
-		diff = new Rect
-			x1: x1 - @x1
-			x2: x2 - @x2
-			y1: y1 - @y1
-			y2: y2 - @y2
+		diff = new Rect x1 - @x1,x2 - @x2,y1 - @y1,y2 - @y2
 
 		if (diff.y1 - diff.y2) > @height
 			throw new Error 'set: Y out of bounds'
@@ -224,6 +263,7 @@ class TileGrid extends Rect
 		if (diff.x1 - diff.x2) > @width
 			throw new Error 'set: X out of bounds'
 		
+		# log 'diff',diff
 		
 		#diff X2
 		if diff.x2 > 0
@@ -310,65 +350,82 @@ class TileGrid extends Rect
 
 
 
-	# check empty rect
-	checkEmptyRect: (x,y,rect,empty_rect)=>
-		empty_rect.set(x,x+rect.x2,y,y+rect.y2)
+
+	# check if a specific Rect at coord x,y is empty
+	checkEmptyRect: (x,y,rect,result)=>
+		result.set(x,x+rect.x2,y,y+rect.y2)
+
+		# log 'result',result
 
 		# continue search.
-		if @matrix[empty_rect.y2-1][empty_rect.x2-1]
-			empty_rect.set()
+		if @matrix[result.y2-1][result.x2-1]
+			result.set()
 			return true
 		
-		if empty_rect.loopMatrix(@matrix,@isItemNull) == true
+		if result.loopMatrix(@matrix,@isItemNull) == true
 			return false
 		else
-			empty_rect.set()
+			result.set()
 
 
 	# find a free rect within bounds, if no rect is found, return null
 	# rect x1 and y1 must be normalized.
-	findEmptyRect: (rect,bounds,cb)->
+	findEmptyRect: (rect,bounds,result,cb)->
 		rect.normalize()
 
-		# limit size by the rect that we are trying to find (no overflow searches)
-		bounds.x2 -= rect.x2 - 1
-		bounds.y2 -= rect.y2 - 1
 		
 
-		empty_rect = new Rect
+		bounds.loopRect(@checkEmptyRect,rect,result)
 
-		# log 'bounds',bounds
-
-		
-		bounds.loopRect(@checkEmptyRect,rect,empty_rect)
-
-		# log bounds.x1
-
-		if empty_rect.x2 != 0 && empty_rect.y2 != 0
-			return empty_rect
+		if result.x2 != 0 && result.y2 != 0
+			return true
 		else
-			return null
+			if cb
+				if cb() == true
+					return @findEmptyRect(rect,bounds,result,cb)
+				else
+					
+					@findEmptyRect(rect,bounds,result)
+					return false
+			else
+				return false
 
 
-	# add an item with a specific bound to look for free space, if no free space, the cb will be called and space will be searched again but without a callback. if no callback is provided will either place the item or return false.
-	addItem: (item,bound,cb)->
-		# log 'addItem',item
-		found_rect = @findEmptyRect(item,bound)
-		if !found_rect
+
+	# add an item with a specific bound to look for free space, if the grid is full within the search bounds, callback function will be fired and its return value will decide to either search again with the same callback or to do a final search without the callback.
+	add: (item,x1,x2,y1,y2,cb)->
+		bounds = @_temp[0].set(x1,x2,y1,y2)
+		
+		# limit search  by the rect that we are trying to find (no overflow searches)
+		if bounds.x2 > bounds.x1
+			bounds.x2 -= item.x2 - 1
+		else
+			bounds.x1 -= item.x2 - 1
+		
+		
+		if bounds.y2 > bounds.y1
+			bounds.y2 -= item.y2 - 1
+		else
+			bounds.y1 -= item.y2 - 1
+
+
+		result = @_temp[1].set()
+
+		
+
+		if !@findEmptyRect(item,bounds,result,cb)
 			return false
 		else
-			item.rect = found_rect
+			item.rect = new Rect().copy(result)
 			item.rect.loopMatrix(@matrix,@setCoordItem,item)
 			@item_list.push item
-			# log 'full',@full
 			return true
 
 	log: ->
-		# +'|'+(x[1]+','+x[2])
 		console.log '-----------------\n\n'
 		for y in @matrix
 			str = y.map (x)->
-				return x && String(x[0].item.n) || '  -  '
+				return x && String(x[0].item.n) || '- '
 			console.log(str.join('     ')+'\n\n')
 		console.log '-----------------'
 

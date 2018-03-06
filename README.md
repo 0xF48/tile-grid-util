@@ -1,4 +1,4 @@
-# Tile Grid Matrix
+# Tile Grid Utility Class
 
 `npm i tile-grid-util`
 
@@ -40,7 +40,7 @@ my_grid.set(-1,1,-1,1) //add one unit to each side of the grid
 a `Rect` containing full first and last rows/columns of the grid.
 
 
-### .add(tile,x1,x2,y1,y2) 
+### .add(tile,x1,x2,y1,y2,onFull) 
 add a tile to first free spot within the specified bound `Rect`
 ```javascript
 // x1,x2,y1,y2 are search bounds.
@@ -48,7 +48,7 @@ my_grid.add(my_tile,0,my_grid.full.x1,0,my_grid.full.y1); //search from top left
 
 my_grid.add(my_tile,0,my_grid.full.x1,0,my_grid.full.y1); //search from last full row and last full column to the bottom right
 
-my_grid.add(my_tile,0my_grid.full.x1,0,my_grid.full.y1,0); //search from first full row/column to top left
+my_grid.add(my_tile,0,my_grid.full.x1,0,my_grid.full.y1,0); //search from first full row/column to top left
 ```
 
 
