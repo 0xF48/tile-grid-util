@@ -62,7 +62,7 @@ add a tile to first free spot within the specified bound `Rect`. returns false i
 		bound_start_x = grid.full.x1
 		bound_end_x = 0
 		bound_start_y = grid.full.y1
-		bound_start_y = 0
+		bound_end_y = 0
 	}
 
 
@@ -71,7 +71,7 @@ add a tile to first free spot within the specified bound `Rect`. returns false i
 		bound_start_x = grid.full.x2
 		bound_end_x = grid.x2
 		bound_start_y = grid.full.y2
-		bound_start_y = grid.y2
+		bound_end_y = grid.y2
 	}
 
 
@@ -89,3 +89,7 @@ add a tile to first free spot within the specified bound `Rect`. returns false i
 	}
 
 ```
+
+
+`npm run dev` dev server
+`npm run prod` build library to /dist

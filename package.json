@@ -1,11 +1,11 @@
 {
   "name": "tile-grid-util",
-  "version": "0.0.1",
+  "version": "0.1.1",
   "description": "🔷 javascript utility library to manage tile grids.",
   "main": "dist/tile-grid-util.js",
   "scripts": {
     "dev": "webpack-dev-server --config ./scripts/dev.config.js --mode development",
-    "build": "webpack --config ./scripts/dev.config.js --mode production"
+    "prod": "webpack --config ./scripts/dev.config.js --mode production && webpack --progress --mode production --config scripts/standalone.config.js"
   },
   "repository": {
     "type": "git",
