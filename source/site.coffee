@@ -2,7 +2,7 @@
 {Box,Shader} = require 'shader-box'
 Markdown = require 'preact-markdown'
 require './site.less'
-require 'normalize.css'
+# require 'normalize.css'
 EXAMPLES = []
 PROPS = []
 
@@ -98,7 +98,7 @@ class Header extends Component
 					h 'a',
 						href: "https://github.com/arxii/preact-slide"
 						className: 'title-name'
-						'Grid Utility Library'
+						'Tile Grid Util'
 					h 'a',
 						href: "https://github.com/arxii/preact-slide"
 						className: 'center github-link'

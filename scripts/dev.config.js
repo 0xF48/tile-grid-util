@@ -6,14 +6,16 @@ var cfg = {
 	module: {
 		rules: [
 			{ test: /\.coffee$/, use: "coffee-loader"},
-			{ test: /\.glsl$/, use: "glsl-template-loader" },
+			{ test: /\.glsl$/, use: "raw-loader" },
 			{ test: /\.(xml|html|txt|md)$/, loader: "raw-loader" },
 			{ test: /\.(less)$/, use: ['style-loader','css-loader','less-loader'] },
+			{ test: /\.(css)$/, use: ['style-loader','css-loader'] },
 			{ test: /\.(woff|woff2|eot|ttf|svg)$/,loader: 'url-loader?limit=65000' }
 		]
 	},
 	entry: {
-		main: path.join(__dirname,'..','/source/site.coffee')
+		main: path.join(__dirname,'..','/source/site.coffee'),
+		test: path.join(__dirname,'..','/source/test.coffee')
 	},
 	resolve: {
 		// "modules": [__dirname+"/node_modules"],

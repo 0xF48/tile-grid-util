@@ -38,20 +38,21 @@ class Rect
 		return @
 
 	loopMatrix: (matrix,cb,argA,argB,argC)->
-
+		# log @y1,@y2
 		for y in [@y1...@y2]
 			if y < 0 then continue
 			if y > matrix.length then return false
 			for x in [@x1...@x2]
 				if matrix[y][x] == undefined then continue
 				if cb(matrix[y][x],x,y,argA,argB,argC) == false
+					log 'ret'
 					return false
 		return true
 
 	loopRect: (cb,argA,argB,argC)->
 		for y in [@y1...@y2]
 			for x in [@x1...@x2]
-				if cb(x,y,argA,argB,argC) == false
+				if cb(x,y,argA,argB,argC)
 					return false
 		return true
 
@@ -76,15 +77,15 @@ class TileGrid extends Rect
 	constructor: (opt)->
 
 		super()
-		log @x2
-
+		
+		@check_holes = if opt.check_holes? then opt.check_holes else true
 		@_temp = [new Rect,new Rect,new Rect]
 		@offset_x = 0
 		@offset_y = 0
 		
 		
 		@matrix = [] #2d matrix array that contains references to items in the list.
-		@item_list = [] # a list of items.
+		# @item_list = [] # a list of items.
 		@removed = []
 
 
@@ -94,7 +95,7 @@ class TileGrid extends Rect
 
 		@set(0,opt.width,0,opt.height)
 
-		log @full
+	
 		
 
 		
@@ -117,7 +118,7 @@ class TileGrid extends Rect
 	# set the coordinate item
 	setCoordItem: (item,x,y,new_item)=>
 		if item then throw new Error 'setCoord, coord taken ['+x+','+y+'] by '+item
-		@matrix[y][x] = [new_item,x-new_item.rect.x1,y-new_item.rect.y1]
+		@matrix[y][x] = [new_item,x-new_item.rect.x1,y-new_item.rect.y1] 
 		@incrY(y)
 		@incrX(x)
 
@@ -148,16 +149,20 @@ class TileGrid extends Rect
 		if @full.count_y[y] == @width
 			if y < @full.y1
 				# check for holes
-				for yi in [y...@full.y1]
-					if @full.count_y[yi] != @width
-						return
+				if @check_holes
+					for yi in [y...@full.y1]
+						if @full.count_y[yi] != @width
+							return
 				@full.y1 = y
+				# log 'y1',y
 			else
 				# check for holes
-				for yi in [@full.y1...y]
-					if @full.count_y[yi] != @width
-						return
+				if @check_holes
+					for yi in [@full.y1...y]
+						if @full.count_y[yi] != @width
+							return
 				@full.y2 = y
+				# log 'y2',y
 					
 	
 	# increment column full value and count (all y items on x)
@@ -168,15 +173,17 @@ class TileGrid extends Rect
 		if @full.count_x[x] == @width
 			if x < @full.x1
 				# check for holes
-				for xi in [x...@full.x1]
-					if @full.count_x[xi] != @width
-						return
+				if @check_holes
+					for xi in [x...@full.x1]
+						if @full.count_x[xi] != @width
+							return
 				@full.x1 = x
 			else
 				# check for holes
-				for xi in [@full.x1...x]
-					if @full.count_y[xi] != @width
-						return
+				if @check_holes
+					for xi in [@full.x1...x]
+						if @full.count_y[xi] != @width
+							return
 				@full.x2 = x
 					
 
@@ -191,7 +198,7 @@ class TileGrid extends Rect
 
 	# clear one item from the matrix
 	clearItem: (spot,x,y)=>
-		if !spot then return false
+		if !spot then return falsel
 		item = spot[0]
 		sx = x - spot[1]
 		sy = y - spot[2]
@@ -211,11 +218,13 @@ class TileGrid extends Rect
 		for item,x in @matrix[y]
 			@clearItem @matrix[y][x],x,y
 
+
 	# clear any items in a column that are also in column x2
 	clearLinkedX: (x,x2)->
 		for row,y in @matrix
 			if row[x] && row[x2] && row[x2][0] == row[x][0]
 				@clearItem row[x],x,y
+
 
 	# clear any items in a column that are also in column x2
 	clearLinkedY: (y,y2)->
@@ -228,6 +237,7 @@ class TileGrid extends Rect
 	clearX: (x)->
 		for row,y in @matrix
 			@clearItem row[x],x,y
+
 
 	# insert column(s) into matrix
 	insertX: (pos,count)->
@@ -248,6 +258,7 @@ class TileGrid extends Rect
 			for y in @matrix
 				y.splice(pos,0,null)
 
+
 	# insert row(s) into matrix
 	insertY: (pos,count)->
 		@clearLinkedY(pos,_clamp(pos-1,0,@y2-1))
@@ -257,8 +268,9 @@ class TileGrid extends Rect
 			@full.count_y.splice(pos,0,0)
 			@matrix.splice(pos,0,new Array(@x2).fill(null))
 
+
 	# set new bounds for matrix.
-	setGrid: (x1,x2,y1,y2)->
+	set: (x1,x2,y1,y2)->
 		if !@height
 			@height = 0
 		if !@width
@@ -368,54 +380,35 @@ class TileGrid extends Rect
 
 
 
-	padGrid: (x1,x2,y1,y2)->
-		@set(@x1+x1,@x2+x2,@y1+y1,@y2+y2)
+	pad: (x1,x2,y1,y2)->
+		@set(@x1-x1,@x2+x2,@y1-y1,@y2+y2)
 
 
 
-
-	# check if a specific Rect at coord x,y is empty
-	checkEmptyRect: (x,y,rect,result)=>
-		result.set(x,x+rect.x2,y,y+rect.y2)
-
-		# log 'result',result
-
-		# continue search.
-		if @matrix[result.y2-1][result.x2-1]
-			result.set()
-			return true
-		
-		if result.loopMatrix(@matrix,@isItemNull) == true
-			return false
-		else
-			result.set()
 
 
 	# find a free rect within bounds, if no rect is found, return null
 	# rect x1 and y1 must be normalized.
-	findEmptyRect: (rect,bounds,result,cb)->
+	findEmptyRect: (rect,bounds,result)->
 		rect.normalize()
+		for y in [bounds.y1...bounds.y2]
+			for x in [bounds.x1...bounds.x2]
+				break_rect = false
+				for iy in [y+rect.y2-1..y]
+					if break_rect
+						break
+					for ix in [x+rect.x2-1..x]
+						if @matrix[iy][ix] != null
+							break_rect = true
+							break
+				if break_rect == false
+					return result.set(x,x+rect.x2,y,y+rect.y2)
 
-		
-
-		bounds.loopRect(@checkEmptyRect,rect,result)
-
-		if result.x2 != 0 && result.y2 != 0
-			return true
-		else
-			if cb
-				if cb(bounds) == true
-					return @findEmptyRect(rect,bounds,result,cb)
-				else
-					@findEmptyRect(rect,bounds,result)
-					return false
-			else
-				return false
-
+				
 
 
 	# add an item with a specific bound to look for free space, if the grid is full within the search bounds, callback function will be fired and its return value will decide to either search again with the same callback or to do a final search without the callback.
-	addTile: (item,x1,x2,y1,y2,cb)->
+	addTile: (item,x1,x2,y1,y2)->
 		bounds = @_temp[0].set(x1,x2,y1,y2)
 		
 		# limit search  by the rect that we are trying to find (no overflow searches)
@@ -430,32 +423,36 @@ class TileGrid extends Rect
 		else
 			bounds.y1 -= item.y2 - 1
 
+		if bounds.y2 < 0 || bounds.x2 < 0
+			return false
+
+
+
+
 
 		result = @_temp[1].set()
 
-		
-
-		if !@findEmptyRect(item,bounds,result,cb)
+		if !@findEmptyRect(item,bounds,result)
 			return false
 		else
 			item.rect = new Rect().copy(result)
 			item.rect.loopMatrix(@matrix,@setCoordItem,item)
-			@item_list.push item
+			# @item_list.push item
 			return true
 
 	setTileCb: (bounds)->
 		@clearRect(bounds)
 		return false
 	
-	setTile: (item,x1,y1)->
-		@addTile(item,x1,x1+item.x2,y1,y1+item.y2,@setTileCb)
+	# setTile: (item,x1,y1)->
+	# 	@addTile(item,x1,x1+item.x2,y1,y1+item.y2)
 
 
 	log: ->
 		console.log '-----------------\n\n'
 		for y in @matrix
 			str = y.map (x)->
-				return x && String(x[0].item.n) || '- '
+				return x && String(x[0].item.key) || '- '
 			console.log(str.join('     ')+'\n\n')
 		console.log '-----------------'
 
