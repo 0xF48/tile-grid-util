@@ -93,6 +93,8 @@ class TileGrid extends Rect
 		@full.count_y = []
 
 		@set(0,opt.width,0,opt.height)
+
+		log @full
 		
 
 		
@@ -231,7 +233,16 @@ class TileGrid extends Rect
 	insertX: (pos,count)->
 		@clearLinkedX(pos,_clamp(pos-1,0,@x2-1))
 		
-		
+		if @full.x1 > pos
+			@full.x1 += count
+		else
+			@full.x1 = @x2-1
+		if @full.x2 > pos
+			@full.x2 = 0
+
+		@full.y1 = @y2
+		@full.y2 = 0
+
 		for i in [0...count]
 			@full.count_x.splice(pos,0,0)
 			for y in @matrix
@@ -247,7 +258,7 @@ class TileGrid extends Rect
 			@matrix.splice(pos,0,new Array(@x2).fill(null))
 
 	# set new bounds for matrix.
-	set: (x1,x2,y1,y2)->
+	setGrid: (x1,x2,y1,y2)->
 		if !@height
 			@height = 0
 		if !@width
@@ -264,6 +275,9 @@ class TileGrid extends Rect
 			throw new Error 'set: X out of bounds'
 		
 		# log 'diff',diff
+
+		
+
 		
 		#diff X2
 		if diff.x2 > 0
@@ -273,8 +287,6 @@ class TileGrid extends Rect
 					y.push null
 		else if diff.x2 < 0
 			for i in [0...diff.x2]
-				# log @matrix[0].length
-				# log @x2-1+i
 				@clearX(@x2-1+i)
 				@full.count_x.pop()
 				for y in @matrix
@@ -302,6 +314,8 @@ class TileGrid extends Rect
 				for row in @matrix
 					row.shift()
 		@x1 = x1
+
+
 
 
 		#diff Y2
@@ -340,12 +354,21 @@ class TileGrid extends Rect
 
 		@normalize()
 
+
+		if diff.x2 - diff.x1 > 0
+			@full.y1 = @y2-1
+			@full.y2 = @y1
+		
+		if diff.y2 - diff.y1 > 0
+			@full.x1 = @x2-1
+			@full.x2 = @x1
+
 		@width = @x2
 		@height = @y2
 
 
 
-	pad: (x1,x2,y1,y2)->
+	padGrid: (x1,x2,y1,y2)->
 		@set(@x1+x1,@x2+x2,@y1+y1,@y2+y2)
 
 
@@ -381,10 +404,9 @@ class TileGrid extends Rect
 			return true
 		else
 			if cb
-				if cb() == true
+				if cb(bounds) == true
 					return @findEmptyRect(rect,bounds,result,cb)
 				else
-					
 					@findEmptyRect(rect,bounds,result)
 					return false
 			else
@@ -393,7 +415,7 @@ class TileGrid extends Rect
 
 
 	# add an item with a specific bound to look for free space, if the grid is full within the search bounds, callback function will be fired and its return value will decide to either search again with the same callback or to do a final search without the callback.
-	add: (item,x1,x2,y1,y2,cb)->
+	addTile: (item,x1,x2,y1,y2,cb)->
 		bounds = @_temp[0].set(x1,x2,y1,y2)
 		
 		# limit search  by the rect that we are trying to find (no overflow searches)
@@ -420,6 +442,14 @@ class TileGrid extends Rect
 			item.rect.loopMatrix(@matrix,@setCoordItem,item)
 			@item_list.push item
 			return true
+
+	setTileCb: (bounds)->
+		@clearRect(bounds)
+		return false
+	
+	setTile: (item,x1,y1)->
+		@addTile(item,x1,x1+item.x2,y1,y1+item.y2,@setTileCb)
+
 
 	log: ->
 		console.log '-----------------\n\n'

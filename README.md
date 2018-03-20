@@ -2,6 +2,8 @@
 
 `npm i tile-grid-util`
 
+*UNSTABLE*
+
 > tile grids...tile grids everywhere! 🤯
 
 This javascript utility library allows you to create tile grids, add/remove rows, resize the grid, and more.
