@@ -398,6 +398,9 @@ class TileGrid extends Rect
 					if break_rect
 						break
 					for ix in [x+rect.x2-1..x]
+						if !@matrix[iy]
+							break_rect = true
+							break
 						if @matrix[iy][ix] != null
 							break_rect = true
 							break
@@ -423,7 +426,7 @@ class TileGrid extends Rect
 		else
 			bounds.y1 -= item.y2 - 1
 
-		if bounds.y2 < 0 || bounds.x2 < 0
+		if bounds.y2 < 0 || bounds.x2 < 0 || bounds.y1 > @y2 || bounds.x1 > @x2
 			return false
 
 
