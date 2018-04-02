@@ -38,14 +38,12 @@ class Rect
 		return @
 
 	loopMatrix: (matrix,cb,argA,argB,argC)->
-		# log @y1,@y2
 		for y in [@y1...@y2]
 			if y < 0 then continue
 			if y > matrix.length then return false
 			for x in [@x1...@x2]
 				if matrix[y][x] == undefined then continue
 				if cb(matrix[y][x],x,y,argA,argB,argC) == false
-					log 'ret'
 					return false
 		return true
 
@@ -154,7 +152,7 @@ class TileGrid extends Rect
 						if @full.count_y[yi] != @width
 							return
 				@full.y1 = y
-				# log 'y1',y
+				
 			else
 				# check for holes
 				if @check_holes
@@ -162,7 +160,7 @@ class TileGrid extends Rect
 						if @full.count_y[yi] != @width
 							return
 				@full.y2 = y
-				# log 'y2',y
+			
 					
 	
 	# increment column full value and count (all y items on x)
@@ -185,7 +183,6 @@ class TileGrid extends Rect
 						if @full.count_y[xi] != @height
 							return
 				@full.x2 = x
-				console.log x
 					
 
 
