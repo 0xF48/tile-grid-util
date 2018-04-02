@@ -1,6 +1,6 @@
 {
   "name": "tile-grid-util",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "🔷 javascript utility library to manage tile grids.",
   "main": "dist/tile-grid-util.js",
   "scripts": {
