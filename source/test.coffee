@@ -41,4 +41,31 @@
 # 		h 'canvas',
 # 			ref: @refCavas
 
-render(h(Test),document.body,@docs_el)
+# render(h(Test),document.body,@docs_el)
+
+grid = new TileGrid
+	width: 2
+	height: 8
+
+tiles = []
+
+g = new Tile
+	width: 2
+	height: 2
+	item: 
+		key: 'g'
+
+grid.addTile g,grid.full.x2,grid.x2,grid.full.y2,grid.y2
+
+for i in [0...5]
+	tile = new Tile
+		width: 1
+		height: 1
+		item: 
+			key: i
+	grid.addTile(tile,grid.full.x2,grid.x2,grid.full.y2,grid.y2)
+
+grid.log()
+
+	
+# @grid.addTile(tile,@grid.full.x1,0,@grid.full.x1,0,@grid.full.y1)

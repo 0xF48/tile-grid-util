@@ -170,21 +170,22 @@ class TileGrid extends Rect
 		@full.count_x[x]++
 
 		# decide the full X/Y coord
-		if @full.count_x[x] == @width
+		if @full.count_x[x] == @height
 			if x < @full.x1
 				# check for holes
 				if @check_holes
 					for xi in [x...@full.x1]
-						if @full.count_x[xi] != @width
+						if @full.count_x[xi] != @height
 							return
 				@full.x1 = x
 			else
 				# check for holes
 				if @check_holes
 					for xi in [@full.x1...x]
-						if @full.count_y[xi] != @width
+						if @full.count_y[xi] != @height
 							return
 				@full.x2 = x
+				console.log x
 					
 
 
