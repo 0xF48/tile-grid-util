@@ -1,4 +1,4 @@
-{h,Component} = require 'preact'
+# {h,Component} = require 'preact'
 {TileGrid,Tile,Rect} = require './tile-grid-util.coffee'
 
 
@@ -66,6 +66,9 @@ for i in [0...5]
 	grid.addTile(tile,grid.full.x2,grid.x2,grid.full.y2,grid.y2)
 
 grid.log()
+
+grid.crop 0,2,0,3,(item,x,y)->
+	console.log item,x,y
 
 	
 # @grid.addTile(tile,@grid.full.x1,0,@grid.full.x1,0,@grid.full.y1)

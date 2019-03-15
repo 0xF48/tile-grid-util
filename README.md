@@ -40,6 +40,12 @@ a `Rect` class containing full first and last rows/columns of the grid.
 
 
 
+### Grid.crop(x1,x2,y1,y2,callback)
+crop and return all itetms in specific bounds x1: left, x2: right, y1: top, y2: bottom  
+```javascript
+grid.crop(0,grid.x2,0,grid.y2,callback) // callback(item,x,y)
+```
+
 
 ### Grid.set(x1,x2,y1,y2)
 set the bounds of the grid. x1: left, x2: right, y1: top, y2: bottom  
@@ -47,11 +53,13 @@ set the bounds of the grid. x1: left, x2: right, y1: top, y2: bottom
 grid.set(grid.x1 - 1,grid.x2 + 1,grid.y1 - 1,grid.y2 + 1) //add one unit to each side of the grid
 ```
 
+
 ### Grid.pad(x1,x2,y1,y2)
 same as set but will add the new values to the already existing bounds 
 ```javascript
 grid.set(1,1,1,1) //add one unit to each side of the grid (left,right,top,bottom)
 ```
+
 
 ### Grid.addTile(tile,x1,x2,y1,y2) 
 add a tile to first free spot within the specified bound `Rect`. returns false if no free spot has been found.
@@ -91,5 +99,5 @@ add a tile to first free spot within the specified bound `Rect`. returns false i
 ```
 
 
-`npm run dev` dev server
-`npm run prod` build library to /dist
+
+`npm run build` compile coffeescript file
