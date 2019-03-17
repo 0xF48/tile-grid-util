@@ -497,28 +497,21 @@
     }
 
     crop(x1, x2, y1, y2, cb) {
-      var i_map, j, ref, ref1, results, x, y;
+      var i_map, items, j, k, ref, ref1, ref2, ref3, x, y;
       i_map = new Map();
-      results = [];
+      items = [];
       for (y = j = ref = y1, ref1 = y2; (ref <= ref1 ? j < ref1 : j > ref1); y = ref <= ref1 ? ++j : --j) {
-        results.push((function() {
-          var k, ref2, ref3, results1;
-          results1 = [];
-          for (x = k = ref2 = x1, ref3 = x2; (ref2 <= ref3 ? k < ref3 : k > ref3); x = ref2 <= ref3 ? ++k : --k) {
-            if (this.matrix[y][x]) {
-              if (i_map.get(this.matrix[y][x][0])) {
-                continue;
-              }
-              i_map.set(this.matrix[y][x][0], true);
-              results1.push(cb(this.matrix[y][x][0], x, y));
-            } else {
-              results1.push(void 0);
+        for (x = k = ref2 = x1, ref3 = x2; (ref2 <= ref3 ? k < ref3 : k > ref3); x = ref2 <= ref3 ? ++k : --k) {
+          if (this.matrix[y][x]) {
+            if (i_map.get(this.matrix[y][x][0])) {
+              continue;
             }
+            i_map.set(this.matrix[y][x][0], true);
+            items.push(cb(this.matrix[y][x][0], x, y));
           }
-          return results1;
-        }).call(this));
+        }
       }
-      return results;
+      return items;
     }
 
     // find a free rect within bounds, if no rect is found, return null

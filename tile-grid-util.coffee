@@ -385,13 +385,15 @@ class TileGrid extends Rect
 
 	crop: (x1,x2,y1,y2,cb)->
 		i_map = new Map()
+		items = []
 		for y in [y1...y2]
 			for x in [x1...x2]
 				if @matrix[y][x]
 					if i_map.get(@matrix[y][x][0])
 						continue
 					i_map.set(@matrix[y][x][0],true)
-					cb(@matrix[y][x][0],x,y)
+					items.push cb(@matrix[y][x][0],x,y)
+		return items
 
 
 
