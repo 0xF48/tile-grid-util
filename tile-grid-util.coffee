@@ -393,6 +393,9 @@ class TileGrid extends Rect
 						continue
 					i_map.set(@matrix[y][x][0],true)
 					items.push cb(@matrix[y][x][0],x,y)
+
+		
+
 		return items
 
 
