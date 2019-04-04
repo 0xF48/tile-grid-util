@@ -242,14 +242,21 @@
     
     // clear all items in a rect from the matrix
     clearRect(rect) {
-      return rect.loopMatrix(this.matrix, this.clearItem);
+      var res;
+      console.log('CLEAR RECT', rect, this.matrix);
+      res = rect.loopMatrix(this.matrix, this.clearItem);
+      if (!res) {
+        return false;
+      } else {
+        return true;
+      }
     }
 
     clearItem(spot, x, y) {
       var item, ix, iy, j, k, ref, ref1, ref2, ref3, sx, sy;
       boundMethodCheck(this, TileGrid);
       if (!spot) {
-        return falsel;
+        return true;
       }
       item = spot[0];
       sx = x - spot[1];
@@ -262,7 +269,8 @@
           this.clearCoord(item, ix, iy);
         }
       }
-      return item.rect = null;
+      item.rect = null;
+      return true;
     }
 
     // @removed.push item
@@ -514,11 +522,14 @@
       return items;
     }
 
-    // find a free rect within bounds, if no rect is found, return null
+    // find a free rect within bounds, if no rect is found, return false
     // rect x1 and y1 must be normalized.
-    findEmptyRect(rect, bounds, result) {
+    findEmptyRect(rect, bounds, result, ignore_taken_spots) {
       var break_rect, ix, iy, j, k, l, m, ref, ref1, ref2, ref3, ref4, ref5, ref6, ref7, x, y;
       rect.normalize();
+      if (rect.y2 > bounds.y2 || rect.x2 > bounds.x2 || rect.x1 < bounds.x1 || rect.y2 < bounds.y1) {
+        return false;
+      }
       for (y = j = ref = bounds.y1, ref1 = bounds.y2; (ref <= ref1 ? j < ref1 : j > ref1); y = ref <= ref1 ? ++j : --j) {
         for (x = k = ref2 = bounds.x1, ref3 = bounds.x2; (ref2 <= ref3 ? k < ref3 : k > ref3); x = ref2 <= ref3 ? ++k : --k) {
           break_rect = false;
@@ -531,21 +542,41 @@
                 break_rect = true;
                 break;
               }
-              if (this.matrix[iy][ix] !== null) {
+              if (this.matrix[iy][ix] === void 0) {
+                break_rect = true;
+                break;
+              }
+              if (this.matrix[iy][ix] !== null && !ignore_taken_spots) {
                 break_rect = true;
                 break;
               }
             }
           }
           if (break_rect === false) {
-            return result.set(x, x + rect.x2, y, y + rect.y2);
+            if (result) {
+              return result.set(x, x + rect.x2, y, y + rect.y2);
+            }
+            return true;
           }
         }
       }
+      return false;
     }
 
-    
-    // add an item with a specific bound to look for free space, if the grid is full within the search bounds, callback function will be fired and its return value will decide to either search again with the same callback or to do a final search without the callback.
+    insertTile(item, x, y) {
+      var bounds;
+      bounds = this._temp[0].set(x, x + item.x2, y, y + item.y2);
+      if (!this.findEmptyRect(item, bounds, null, true)) {
+        return false;
+      }
+      if (!this.clearRect(bounds)) {
+        console.warn('failed to clear rect');
+        return false;
+      }
+      item.rect = new Rect().copy(bounds);
+      return bounds.loopMatrix(this.matrix, this.setCoordItem, item);
+    }
+
     addTile(item, x1, x2, y1, y2) {
       var bounds, result;
       bounds = this._temp[0].set(x1, x2, y1, y2);

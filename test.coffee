@@ -47,8 +47,6 @@ grid = new TileGrid
 	width: 2
 	height: 8
 
-tiles = []
-
 g = new Tile
 	width: 2
 	height: 2
@@ -65,10 +63,25 @@ for i in [0...5]
 			key: i
 	grid.addTile(tile,grid.full.x2,grid.x2,grid.full.y2,grid.y2)
 
+# grid.log()
+# grid.crop 0,2,0,3,(item,x,y)->
+# 	console.log item,x,y
+
+
+
+for i in [0...5]
+	tile = new Tile
+		width: 2
+		height: 1+i
+		item: 
+			key: 'f'+i
+	console.log grid.insertTile(tile,0,i)
+
+
 grid.log()
 
-grid.crop 0,2,0,3,(item,x,y)->
-	console.log item,x,y
+
+
 
 	
 # @grid.addTile(tile,@grid.full.x1,0,@grid.full.x1,0,@grid.full.y1)

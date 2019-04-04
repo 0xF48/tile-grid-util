@@ -191,12 +191,15 @@ class TileGrid extends Rect
 
 	# clear all items in a rect from the matrix
 	clearRect: (rect)->
-		rect.loopMatrix(@matrix,@clearItem)
-
+		res = rect.loopMatrix(@matrix,@clearItem)
+		if !res
+			return false
+		else
+			return true
 
 	# clear one item from the matrix
 	clearItem: (spot,x,y)=>
-		if !spot then return falsel
+		if !spot then return true
 		item = spot[0]
 		sx = x - spot[1]
 		sy = y - spot[2]
@@ -208,6 +211,8 @@ class TileGrid extends Rect
 				@clearCoord(item,ix,iy)
 
 		item.rect = null
+
+		return true
 		# @removed.push item
 		
 
@@ -284,7 +289,7 @@ class TileGrid extends Rect
 		if (diff.x1 - diff.x2) > @width
 			throw new Error 'set: X out of bounds'
 		
-		# log 'diff',diff
+		
 
 		
 
@@ -400,30 +405,63 @@ class TileGrid extends Rect
 
 
 
-	# find a free rect within bounds, if no rect is found, return null
+	# find a free rect within bounds, if no rect is found, return false
 	# rect x1 and y1 must be normalized.
-	findEmptyRect: (rect,bounds,result)->
+	findEmptyRect: (rect,bounds,result,ignore_taken_spots)->
 		rect.normalize()
+
+		if rect.y2 > bounds.y2 || rect.x2 > bounds.x2 || rect.x1 < bounds.x1 || rect.y2 < bounds.y1
+			return false
+
+
 		for y in [bounds.y1...bounds.y2]
 			for x in [bounds.x1...bounds.x2]
 				break_rect = false
+				
 				for iy in [y+rect.y2-1..y]
 					if break_rect
 						break
+					
 					for ix in [x+rect.x2-1..x]
 						if !@matrix[iy]
 							break_rect = true
 							break
-						if @matrix[iy][ix] != null
+						if @matrix[iy][ix] == undefined
+							break_rect = true
+							break
+						if @matrix[iy][ix] != null && !ignore_taken_spots
 							break_rect = true
 							break
 				if break_rect == false
-					return result.set(x,x+rect.x2,y,y+rect.y2)
+					if result
+						return result.set(x,x+rect.x2,y,y+rect.y2)
+					return true
+		return false
 
-				
+	
 
 
-	# add an item with a specific bound to look for free space, if the grid is full within the search bounds, callback function will be fired and its return value will decide to either search again with the same callback or to do a final search without the callback.
+
+	insertTile: (item,x,y)->
+		bounds = @_temp[0].set(x,x+item.x2,y,y+item.y2)
+		
+		
+		
+		if !@findEmptyRect(item,bounds,null,true)
+			return false
+		
+
+		if !@clearRect(bounds)
+			console.warn 'failed to clear rect'
+			return false
+
+
+		item.rect = new Rect().copy(bounds)
+		bounds.loopMatrix(@matrix,@setCoordItem,item)
+
+
+
+
 	addTile: (item,x1,x2,y1,y2)->
 		bounds = @_temp[0].set(x1,x2,y1,y2)
 		
@@ -460,9 +498,7 @@ class TileGrid extends Rect
 		@clearRect(bounds)
 		return false
 	
-	# setTile: (item,x1,y1)->
-	# 	@addTile(item,x1,x1+item.x2,y1,y1+item.y2)
-
+	
 
 	log: ->
 		console.log '-----------------\n\n'
