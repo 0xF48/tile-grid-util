@@ -410,8 +410,8 @@ class TileGrid extends Rect
 	findEmptyRect: (rect,bounds,result,ignore_taken_spots)->
 		rect.normalize()
 
-		if rect.y2 > bounds.y2 || rect.x2 > bounds.x2 || rect.x1 < bounds.x1 || rect.y2 < bounds.y1
-			return false
+		# if rect.y2 > bounds.y2 || rect.x2 > bounds.x2 || rect.x1 < bounds.x1 || rect.y2 < bounds.y1
+		# 	return false
 
 
 		for y in [bounds.y1...bounds.y2]
@@ -445,11 +445,12 @@ class TileGrid extends Rect
 	insertTile: (item,x,y)->
 		bounds = @_temp[0].set(x,x+item.x2,y,y+item.y2)
 		
-		
+		console.log item,x,y
 		
 		if !@findEmptyRect(item,bounds,null,true)
 			return false
 		
+
 
 		if !@clearRect(bounds)
 			console.warn 'failed to clear rect'

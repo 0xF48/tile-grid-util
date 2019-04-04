@@ -63,9 +63,9 @@ for i in [0...5]
 			key: i
 	grid.addTile(tile,grid.full.x2,grid.x2,grid.full.y2,grid.y2)
 
-# grid.log()
-# grid.crop 0,2,0,3,(item,x,y)->
-# 	console.log item,x,y
+grid.log()
+grid.crop 0,2,0,3,(item,x,y)->
+	console.log item,x,y
 
 
 

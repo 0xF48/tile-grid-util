@@ -243,7 +243,6 @@
     // clear all items in a rect from the matrix
     clearRect(rect) {
       var res;
-      console.log('CLEAR RECT', rect, this.matrix);
       res = rect.loopMatrix(this.matrix, this.clearItem);
       if (!res) {
         return false;
@@ -398,8 +397,6 @@
         throw new Error('set: X out of bounds');
       }
       
-      // log 'diff',diff
-
       //diff X2
       if (diff.x2 > 0) {
         for (i = j = 0, ref = diff.x2; (0 <= ref ? j < ref : j > ref); i = 0 <= ref ? ++j : --j) {
@@ -527,9 +524,8 @@
     findEmptyRect(rect, bounds, result, ignore_taken_spots) {
       var break_rect, ix, iy, j, k, l, m, ref, ref1, ref2, ref3, ref4, ref5, ref6, ref7, x, y;
       rect.normalize();
-      if (rect.y2 > bounds.y2 || rect.x2 > bounds.x2 || rect.x1 < bounds.x1 || rect.y2 < bounds.y1) {
-        return false;
-      }
+// if rect.y2 > bounds.y2 || rect.x2 > bounds.x2 || rect.x1 < bounds.x1 || rect.y2 < bounds.y1
+// 	return false
       for (y = j = ref = bounds.y1, ref1 = bounds.y2; (ref <= ref1 ? j < ref1 : j > ref1); y = ref <= ref1 ? ++j : --j) {
         for (x = k = ref2 = bounds.x1, ref3 = bounds.x2; (ref2 <= ref3 ? k < ref3 : k > ref3); x = ref2 <= ref3 ? ++k : --k) {
           break_rect = false;
@@ -566,6 +562,7 @@
     insertTile(item, x, y) {
       var bounds;
       bounds = this._temp[0].set(x, x + item.x2, y, y + item.y2);
+      console.log(item, x, y);
       if (!this.findEmptyRect(item, bounds, null, true)) {
         return false;
       }
@@ -611,9 +608,6 @@
       return false;
     }
 
-    
-    // setTile: (item,x1,y1)->
-    // 	@addTile(item,x1,x1+item.x2,y1,y1+item.y2)
     log() {
       var j, len, ref, str, y;
       console.log('-----------------\n\n');
