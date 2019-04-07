@@ -562,7 +562,6 @@
     insertTile(item, x, y) {
       var bounds;
       bounds = this._temp[0].set(x, x + item.x2, y, y + item.y2);
-      console.log(item, x, y);
       if (!this.findEmptyRect(item, bounds, null, true)) {
         return false;
       }

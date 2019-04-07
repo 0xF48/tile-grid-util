@@ -445,7 +445,7 @@ class TileGrid extends Rect
 	insertTile: (item,x,y)->
 		bounds = @_temp[0].set(x,x+item.x2,y,y+item.y2)
 		
-		console.log item,x,y
+		# console.log item,x,y
 		
 		if !@findEmptyRect(item,bounds,null,true)
 			return false
